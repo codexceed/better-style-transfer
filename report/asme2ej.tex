@@ -1,0 +1,296 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%% asme2ej.tex %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Template for producing ASME-format journal articles using LaTeX    %
+% Written by   Harry H. Cheng, Professor and Director                %
+%              Integration Engineering Laboratory                    %
+%              Department of Mechanical and Aeronautical Engineering %
+%              University of California                              %
+%              Davis, CA 95616                                       %
+%              Tel: (530) 752-5020 (office)                          %
+%                   (530) 752-1028 (lab)                             %
+%              Fax: (530) 752-4158                                   %
+%              Email: hhcheng@ucdavis.edu                            %
+%              WWW:   http://iel.ucdavis.edu/people/cheng.html       %
+%              May 7, 1994                                           %
+% Modified: February 16, 2001 by Harry H. Cheng                      %
+% Modified: January  01, 2003 by Geoffrey R. Shiflett                %
+% Use at your own risk, send complaints to /dev/null                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% use twocolumn and 10pt options with the asme2ej format
+\documentclass[twocolumn,10pt,cleanfoot]{asme2ej}
+
+\usepackage{graphicx, amsmath, bm,listings,hyperref} %% for loading jpg figures
+
+%% The class has several options
+%  onecolumn/twocolumn - format for one or two columns per page
+%  10pt/11pt/12pt - use 10, 11, or 12 point font
+%  oneside/twoside - format for oneside/twosided printing
+%  final/draft - format for final/draft copy
+%  cleanfoot - take out copyright info in footer leave page number
+%  cleanhead - take out the conference banner on the title page
+%  titlepage/notitlepage - put in titlepage or leave out titlepage
+%  
+%% The default is oneside, onecolumn, 10pt, final
+
+
+\title{Conditional Image Generation using DCGAN}
+
+%%% first author
+\author{Navpreet Singh
+    \affiliation{
+    CIMS\\
+    New York University\\
+    Email: ns4647@nyu.edu
+    }
+}
+
+%%% second author
+%%% remove the following entry for single author papers
+%%% add more entries for additional authors
+\author{Aashiq Mohamed Baig
+    \affiliation{
+    CIMS\\
+    New York University\\
+    Email: amb1558@nyu.edu
+    }
+}
+
+%%% third author
+%%% remove the following entry for single author papers
+%%% add more entries for additional authors
+\author{Sarthak Joshi
+    \affiliation{
+    CIMS\\
+    New York University\\
+    Email: sj2810@nyu.edu
+    }
+}
+
+
+\begin{document}
+
+\maketitle    
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+{\it 
+Generative Adversarial Networks (GANs) have become the state-of-the-art tool for generative modeling especially with their success in facial image generation. Two of the most remarkable evolutions of GANs are Conditional GANs (CGAN) and Deep Convolutional GANs (DCGANs) which allow us to respectively control the generated output by specifying the class we want to condition on and leverage CNNs to perform unsupervised learning on images. In this work, we combine these 2 nets and apply the resultant Conditional DCGAN (CDCGAN) on 2 distinct domains, namely, celebrity faces using the CelebA dataset and landscapes using a self-compiled landscape image dataset. We demonstrate controlled image generation across these 2 domains using  our CDCGAN model and illustrate performance analyses for the same.
+}
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+GANs offer a novel way to train generative models and allowed for an interesting application in unsupervised learning in the form of generating hyper-realistic artificial images. DCGANs improved upon this model by leveraging modern CNN capabilities to scale up the training speeds and improve stability of the model. Lastly, conditional GANs extend the utility of GANs by offering control over the output images and allowing manipulation of the generative model's bias towards certain specific features.
+
+We combine these broad ideas and develop a Conditional DCGAN model. Our experiments involve majorly generating recognizable images in the 2 domains of celebrity faces and landscapes. In the former use case, we control output features such as hair-color and gender of the face generated whereas in case of landscape, we manipulate common landscape fetures such as mountains, trees, water bodies, etc.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Related Work}
+
+\subsection{Conditional Generative Adversarial Networks}
+Generative adversarial nets were recently introduced as an alternative framework for training generative models in order to sidestep the difficulty of approximating many intractable probabilistic computations. CGANs evolved out of this framework as a model that allows us to direct the generation process by conditioning the discriminator and the generator.
+
+GANs can be extended to a conditional model if both the generator and discriminator are conditioned on some extra information $\boldsymbol{y}$. $\boldsymbol{y}$ could be any kind of auxiliary information, such as class labels or data from other modalities. We can perform the conditioning by feeding $\boldsymbol{y}$ into the both the discriminator and generator as additional input layer.
+
+In the generator the prior input noise $pz(z)$, and $\boldsymbol{y}$ are combined in joint hidden representation, and
+the adversarial training framework allows for considerable flexibility in how this hidden representation is composed. 1
+In the discriminator $\boldsymbol{x}$ and $\boldsymbol{y}$ are presented as inputs and to a discriminative function (embodied
+again by a MLP in this case).
+
+\subsection{Deep Convolutional Generative Adversarial Networks}
+
+Learning reusable feature representations from large unlabeled datasets has been an area of active research. In the context of computer vision, one can leverage the practically unlimited amount of unlabeled images and videos to learn good intermediate representations, which can then be used on a variety of supervised learning tasks such as image classification.
+
+DCGANs have proven to be a more stable set of architectures for training GANs and allowed for training higher resolution and deeper models.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Approach\\}
+
+\subsection{Preparing the Data}
+Based on our initial research into GANs and their use cases, we knew that conditionining on GANs, and more specifically, the number of classes significantly inflate the required training data. We, therefore, sought out large, easily available and accurately tagged image datasets (preferably with multiple tags on a single image corresponding to the features we want to control). We ended up with the following two datasets:
+
+\subsubsection{CelebA}
+CelebFaces Attributes Dataset (CelebA) is a large-scale face attributes dataset with more than 200K celebrity images, each with 40 attribute annotations. The images in this dataset cover large pose variations and background clutter. CelebA has large diversities, large quantities, and rich annotations, including
+
+- 10,177 number of identities,
+
+- 202,599 number of face images, and
+
+- 5 landmark locations, 40 binary attributes annotations per image.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Self-compiled Image Landscapes Dataset}
+As part of our data discovery, we sourced landscape images, both in terms of labelled datasets and bulk image downloads. With the vast majority of our data being unlabelled, we used the pretrained \textbf{Resnet50} model in PyTorch to generate confidence scores for our target classes and used these scores to tag the images. The image tags we focused on were Sea, Forest, Mountain, Glacier, River, Snow and Sky.
+
+Using a specific threshold for confidence score, we generated an attribute file containing our \textbf{one-hot-encoded} feature vectors for all our images. The following figure illustrates an example of this.
+
+\begin{figure}
+\centerline{\includegraphics[width=3.5in]{images/landscape_results/landscape_one_hot}}
+\caption{Image Tagging}
+\label{one_hot_fig}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The Model}
+GANs can be extended to a conditional model if both the generator and discriminator are conditioned on some extra information $\boldsymbol{y}$. $\boldsymbol{y}$ can typically be a class label or tag.
+
+The core idea is to train a GAN with a conditioner, we can perform the conditioning by feeding $\boldsymbol{y}$ into the both the discriminator and generator as additional input layer. This is encapsulated in the following equation that signifies \textbf{min-max} game between the discriminator~(\ref{discriminator_fig}) and the generator~(\ref{generator_fig}).
+
+\begin{flalign*}
+\resizebox{1\hsize}{!}{$\underset{G}{min}\ \underset{D}{max}\ V(D,G)=E_{x~p_{data}(x)}[log D(x|y)]+E_{z~p_z(z)}[log(1-D(G(z|y)))]$} \\
+\end{flalign*}
+
+\begin{figure}
+\centerline{\includegraphics[width=3.5in]{images/conditional_gan}}
+\caption{Conditional GAN}
+\label{cgan_fig}
+\end{figure}
+
+
+\begin{figure}
+\centerline{\includegraphics[width=3.5in]{images/generator}}
+\caption{Generator}
+\label{generator_fig}
+\end{figure}
+
+
+\begin{figure}
+\centerline{\includegraphics[width=3.5in]{images/discriminator}}
+\caption{Dsicriminator}
+\label{discriminator_fig}
+\end{figure}
+
+\subsubsection{Network architecture}
+\begin{itemize}
+    \item[-] \textbf{Generator}:
+    \begin{enumerate}
+        \item Hidden Layers: Four 4x4 strided convolutional layers (1024, 512, 256, and 128 kernels, respectively) with ReLU
+        \item Output Layer: 4x4 strided convolutional layer (4096 nodes = 64x64 size image) with Tanh
+        \item Batch Normalization is used except for output layer
+    \end{enumerate}
+
+    \item[-] \textbf{Discriminator}:
+    \begin{enumerate}
+        \item Hidden Layers: Four 4x4 convolutional layers (128, 256, 512 and 1024 kernels, respectively) with Leaky ReLU
+        \item Output Layer: 4x4 convolutional layer (1 node) with Sigmoid
+        \item Batch Normalization is used except for 1st hidden layer and output layer
+        \item Loss Function: Binary Cross Entropy used due to two output labels.
+    \end{enumerate}
+    \item[-] We are using the Adam optimizer.
+\end{itemize}
+
+\subsection{Constraints}
+A critical factor of GAN-based generation is the accuracy and precision of image tags across the training dataset. Given the GAN discriminator and generator both heavily rely on tags, reducing the training loss was a significant challenge as our Landscape Image Dataset,
+    \begin{itemize}
+    \item[-] Had fewer training samples
+    \item[-] Had fewer cases of images with appropriate multiple tags
+    \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Experimental Results \\}
+\subsection{Training}
+\subsubsection{Image Transformations}
+\begin{itemize}
+    \item[-] The original images from the dataset were sized at 178x218. In order to fit our convolution layer, reduce loss and improve training times, we resized these images to 64x46.
+    \item[-] We centered the images to reduce background noise.
+\end{itemize}
+\subsubsection{Hyperparameters}
+We used the following hyperparameters for our model:
+\begin{itemize}
+    \item[-] \lstinline{label_dim = 2} : Number of classes per attribute (male/female or black/brown hair)
+    \item[-] \lstinline{G_input_dim = 100x100} : Size of generator input noise which is converted to the generated image.
+    \item[-] \lstinline{G_output_dim = 64x64x3} : Size of generator output.
+    \item[-] \lstinline{D_input_dim = 3}
+    \item[-] \lstinline{D_output_dim = 1} : Discriminator predicts a single label (real or fake).
+    \item[-] \lstinline{num_filters = [1024, 512, 256, 128] } : Convolution filter sizes.
+    \item[-] \lstinline{learning_rate = 0.0002}
+    \item[-] \lstinline{betas = (0.5, 0.999)}
+    \item[-] \lstinline{batch_size = 128}
+    \item[-] \lstinline{num_epochs = 60}
+\end{itemize}
+\subsection{Results on Landscapes}
+Generating controlled landscapes was particularly challenging on the landscape dataset due to the fact that:
+\begin{itemize}
+    \item[-] \textbf{Insufficient Data}: At best, we had ~24,000 images for a given feature attribute, while on an average, each attribute had fewer than 3000 images associated with it.
+    \item[-] \textbf{Inadequate Tagging}: Since most of our landscape dataset was manually compiled, there weren't enough attribute labels on a significant chunk of the imagees, with most images largely being associated with a single tag. This prevents the model from understanding the key differences across the attributes on a single image containing multiple such attributes.
+\end{itemize}
+
+We ran a total of 20 epochs on a subset of the dataset containing images with either forests or mountains in them. 
+
+\begin{figure}
+\centerline{\includegraphics[width=3in]{images/landscape_results/cDCGAN_losses_epoch_20}}
+\caption{Controlled Landscapes Loss Plot}
+\label{landscapes_loss}
+\end{figure}
+
+\begin{figure*}
+\includegraphics[width=2.3in]{images/landscape_results/cDCGAN_epoch_1}
+\includegraphics[width=2.3in]{images/landscape_results/cDCGAN_epoch_10}
+\includegraphics[width=2.3in]{images/landscape_results/cDCGAN_epoch_20}
+\caption{Generated Landscape pairs}
+\label{landscape_res}
+\end{figure*}
+
+We observed that the generator loss does not decrease significantly and as evidenced by the output, the generated output quality is low. The lack of input with multiple overalapping tags, specifically, images with both mountains and forests prevented the model from significantly identifying the key aspects of these attributes.
+
+\begin{figure}
+\centerline{\includegraphics[width=3in]{images/CelebA_cDCGAN_losses_epoch_56}}
+\caption{Controlled Gender Loss Plot}
+\label{celeba_gender_loss}
+\end{figure}
+
+\begin{figure}
+\centerline{\includegraphics[width=3in]{images/CelebA_cDCGAN_losses_epoch_60}}
+\caption{Controlled Hair Color Loss Plot}
+\label{celeba_hair_color_loss}
+\end{figure}
+
+\subsection{Results on CelebA}
+Going on the \textbf{CelebA} dataset, we had a few major advantages:
+
+\begin{itemize}
+    \item[-] ~200k images
+    \item[-] 40 feature attributes per image
+\end{itemize}
+We performed our training with a focus on 2 specific attributes out of 40, namely hair color and gender. Our attribute choices were motivated mainly by the fact that changes in hair color and gender-specific features are far more conspiciuous than changes on the others. In this experiment, we filtered the training data on attribute vectors with either the \textbf{black hair} or \textbf{red hair} attribute set. No filters were required for genders.
+
+We ran a total of 60 epochs on two different sessions (one for the gender attribute and other for hair color). Here are the output progressions:
+
+\begin{enumerate}
+    \item \textbf{Controlled Hair Color}: We observe steady rapid increase in output quality from Epoch 1 to 20~(\ref{celaba_hair_color}) and from thereon, the progression plateaues. This is also reflected in the generator/discriminator loss~(\ref{celeba_hair_color_loss}).
+    \item \textbf{Controlled Gender}: We observe similar early progression~(\ref{celaba_gender}) as we did for hair color, but the model output quality is more ambiguous in this case. This could be due to the less obvious differences in terms of gender on the faces. The loss reduction plateaues fairly early as well~(\ref{celeba_gender_loss})
+\end{enumerate}
+
+
+
+\begin{figure*}
+\includegraphics[width=2.3in]{images/CelebA_cDCGAN_epoch_1}
+\includegraphics[width=2.3in]{images/CelebA_cDCGAN_epoch_5}
+\includegraphics[width=2.3in]{images/CelebA_cDCGAN_epoch_58}
+\caption{Generated 8 Face pairs with black and brown hair specified. Pairs are vertically aligned with top image having brown hair color}
+\label{celaba_hair_color}
+\end{figure*}
+
+\begin{figure*}
+\includegraphics[width=2.3in]{images/celebA_gender_results/CelebA_cDCGAN_epoch_1}
+\includegraphics[width=2.3in]{images/celebA_gender_results/CelebA_cDCGAN_epoch_25}
+\includegraphics[width=2.3in]{images/celebA_gender_results/CelebA_cDCGAN_epoch_55}
+\caption{Generated 8 Face pairs with gender (male/female) specified. Pairs are vertically aligned with top image having female gender}
+\label{celaba_gender}
+\end{figure*}
+
+\section{Conclusion}
+This work demonstrates the capabilities of Conditional DCGANs as a powerful tool for unsupervised learning and generational applications while also highlighting the limitations of conditional GANs in general. We can conclude that :
+\begin{enumerate}
+    \item GANs in general can generate random images with a highly likeliness to the input with a fairly modest input dataset size (~3000 images usually enough).
+    \item Conditional GANs, however, require siginificantly more data with sophisticated tagging. This is due to the fact that conditioning on specific features requires the model to understand nuanced differences. This is highlighted in the performance difference across the results of landscape generation and face generation.
+    \item Depending on the nature and distinction of features being targeted, the training data requirement can significantly vary. For instance, in the case of face generation, hair color distinction was generated than gender differences.
+\end{enumerate}
+
+\subsection*{Code Repository} 
+https://github.com/navpreetnp7/conditional-DCGAN
+
+\begin{figure*}
+\centerline{\includegraphics[width=7.6in]{images/citations}}
+\end{figure*}
+\end{document}
