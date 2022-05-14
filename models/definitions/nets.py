@@ -164,7 +164,7 @@ class Vgg19(torch.nn.Module):
     'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1' were used for style representation
     'conv4_2' was used for content representation (although they did some experiments with conv2_2 and conv5_2)
     """
-    def __init__(self, layers, requires_grad=False, show_progress=False, use_relu=True):
+    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False, use_relu=True):
         super().__init__()
         vgg_pretrained_features = models.vgg19(pretrained=True, progress=show_progress).features
         if use_relu:  # use relu or as in original paper conv layers
@@ -173,11 +173,17 @@ class Vgg19(torch.nn.Module):
         else:
             self.layer_names = ['conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv4_2', 'conv5_1']
             self.offset = 0
-        self.content_feature_maps_index = 3  # conv4_2
-        # all layers used for style representation except conv4_2
-        self.style_feature_maps_indices = list(range(layers))
-        #self.style_feature_maps_indices = list(range(len(self.layer_names)))
-        #self.style_feature_maps_indices.remove(4)  # conv4_2
+
+        # Set content feature map and style feature maps
+        content_feature_map_index = 4 # conv4_2
+        self.content_feature_maps_index = content_feature_map_index
+        if style_layers == -1:
+            self.style_feature_maps_indices = list(range(len(self.layer_names)))
+            self.style_feature_maps_indices.remove(content_feature_map_index)  # conv4_2
+        else:
+            self.style_feature_maps_indices = list(range(style_layers))
+            self.style_feature_maps_indices.remove(content_feature_map_index)  # conv4_2
+
 
         self.slice1 = torch.nn.Sequential()
         self.slice2 = torch.nn.Sequential()
@@ -223,15 +229,19 @@ class Resnet50(torch.nn.Module):
     """
     Implement resnet50 for style transfer
     """
-    def __init__(self, layers, requires_grad=False, show_progress=False):
+    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False):
         super().__init__()
         self.resnet_pretrained = models.resnet50(pretrained=True, progress=show_progress)
         self.layer_names = ['layer0', 'layer1', 'layer2', 'layer3', 'layer4']
 
-        self.content_feature_maps_index = 3 # layer3
-        # all layers used for style representation
-        self.style_feature_maps_indices = list(range(layers))
-        #style_feature_maps_indices = list(range(len(layer_names)))
+        content_feature_map_index = 3
+        self.content_feature_maps_index = content_feature_map_index
+        if style_layers == -1:
+            self.style_feature_maps_indices = list(range(len(self.layer_names)))
+            self.style_feature_maps_indices.remove(content_feature_map_index)
+        else:
+            self.style_feature_maps_indices = list(range(style_layers))
+            self.style_feature_maps_indices.remove(content_feature_map_index)
 
         if not requires_grad:
             for param in self.parameters():
@@ -259,4 +269,63 @@ class Resnet50(torch.nn.Module):
         
         resnet_outputs = namedtuple("ResnetOutputs", self.layer_names)
         out = resnet_outputs(layer0, layer1, layer2, layer3, layer4)
+        return out
+
+
+class InceptionV3(torch.nn.Module):
+    """
+    Implement inceptionV3 for style transfer
+    """
+    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False):
+        super().__init__()
+        self.inception_pretrained = models.inception_v3(pretrained=True, progress=show_progress)
+        self.layer_names = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5', 'layer6', 'layer7']
+
+        content_feature_map_index = 5
+        self.content_feature_maps_index = content_feature_map_index
+        if style_layers == -1:
+            self.style_feature_maps_indices = list(range(len(self.layer_names)))
+            self.style_feature_maps_indices.remove(content_feature_map_index)
+        else:
+            self.style_feature_maps_indices = list(range(style_layers))
+            self.style_feature_maps_indices.remove(content_feature_map_index)
+
+        if not requires_grad:
+            for param in self.parameters():
+                param.requires_grad = False
+                
+    def forward(self, x):
+        
+        x = self.inception_pretrained.Conv2d_1a_3x3(x)
+        layer1 = x
+        x = self.inception_pretrained.Conv2d_2a_3x3(x)
+        x = self.inception_pretrained.Conv2d_2b_3x3(x)
+        layer2 = x
+        x = self.inception_pretrained.maxpool1(x)
+        x = self.inception_pretrained.Conv2d_3b_1x1(x)
+        layer3 = x
+        x = self.inception_pretrained.Conv2d_4a_3x3(x)
+        layer4 = x
+        x = self.inception_pretrained.maxpool2(x)
+        x = self.inception_pretrained.Mixed_5b(x)
+        x = self.inception_pretrained.Mixed_5c(x)
+        x = self.inception_pretrained.Mixed_5d(x)
+        layer5 = x
+        x = self.inception_pretrained.Mixed_6a(x)
+        x = self.inception_pretrained.Mixed_6b(x)
+        x = self.inception_pretrained.Mixed_6c(x)
+        x = self.inception_pretrained.Mixed_6d(x)
+        x = self.inception_pretrained.Mixed_6e(x)
+        layer6 = x
+        x = self.inception_pretrained.Mixed_7a(x)
+        x = self.inception_pretrained.Mixed_7b(x)
+        x = self.inception_pretrained.Mixed_7c(x)
+        layer7 = x
+        x = self.inception_pretrained.avgpool(x)
+        x = self.inception_pretrained.dropout(x)
+        x = torch.flatten(x, 1)
+        x = self.inception_pretrained.fc(x)
+        
+        resnet_outputs = namedtuple("ResnetOutputs", self.layer_names)
+        out = resnet_outputs(layer1, layer2, layer3, layer4, layer5, layer6, layer7)
         return out
