@@ -1,30 +1,32 @@
 # Better Neural Style Transfer
 ## Introduction
 This project aims to replicate the work of [Gatys et al.](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf) 
-on using neural nets to perform **texture style transfer** from one image to another while discovering insights into the performance enhancement via analysis of the transfer process across various training configurations.
+on using neural nets to perform **image style transfer** while discovering insights into performance via analysis of the transfer process across various training configurations.
+
 ### Image Style Transfer Background
-Image style transfer is the process of superimposing the artistic style of a *source image* 
-onto another *target image* to generate a new *stylized image*, thereby **transferring the style** of the *source 
-image*.
+Image style transfer is the process of superimposing the artistic style of a *style image* 
+onto another *content image* to generate a new *stylized output image*, thereby **transferring the style**.
 
 As described in the original paper by [Gatys et al.](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf),
 transferring the style from one image onto another can be considered a problem of texture transfer, a well-researched 
 concept where the SOTA methods prior at the time, while achieving remarkable results, used only low-level image features of 
 the target image to inform the texture transfer.
 
-Gatys et al. proposed a novel algorithm that leverages image representations derived from Convolutional Neural Networks (CNN) 
+Gatys et al. proposed a novel algorithm that leverages image representations derived from Convolutional Neural Networks (CNNs) 
 optimised for object recognition, which make high level image information explicit. We refer to this technique as **Neural Style Transfer**.
 
 ### Neural Style Transfer (NST)
-The NST algorithm leverages image representations derived from deep layers in an image recognition CNN and then use them 
-to inform the style transfer process. Broadly, tt involves the following key steps:
-- Extract image representations from deep convolutional layers of an image recognition CNN from both the *target* 
-(hereon referred to as the *content* image) and the *style* image.
-- Converge a white noise image towards the *stylized* image using losses derived cumulatively from both, the style and content representations.
+The NST algorithm leverages image representations derived from deep layers of a pre-trained image recognition CNN and then uses them 
+to inform the style transfer process. Broadly, NST involves the following key steps:
+- Extract image representations from deep convolutional layers of an image recognition CNN from both the *content* 
+image and the *style* image.
+- Initialize a new content image as the output
+- Converge the content image towards the *stylized* image using losses derived cumulatively from both the style and content representations
 
 ## Algorithm
 
 ![NST Diagram](images/nst_flow.jpg)
+Source: Gatys et al.
 
 ![NST Algorithm](images/nst_algo.jpg)
 
@@ -64,6 +66,14 @@ python neural_style_transfer.py --content_img_name figures.jpg \
 ```
 
 ## Experiments
+
+In order to evaluate our experiments, we needed a method through which we could measure the quality of the stylized output image generated. We initially considered using the overall loss as such a criteria, however, we found that sometimes worse stylized output images had lower loss than better stylized output images. This follows the idea that the objective of texture transfer is subjective and there is no one optimal target to converge to.
+
+Instead of loss, we adopted the following heuristics to evaluate a good stylized output image:
+1. The output image contains clearly outlines of the objects in the content image
+2. The output image adopts the color palette of the style image
+3. The output image adopts the texture of the style image
+
 ### Testing different image initializations
 The choice of initialization influenced the final output significantly. Our expectation was that all of these choices 
 would have converged to the same or a similar image given enough iterations, however, we found that the algorithm 
@@ -72,24 +82,25 @@ converged to local minima. We tested the following initializations
 - Style
 - Random Gaussian
 - Random Uniform
+
 With the following output (left to right respectively)
 
 ![Figure 1: (Far left) Trained output using initialization of the output image as the content image. (Middle left) Trained output using initialization of the output image as a resized version of the style image. (Middle right) Trained output using initialization of the output image as a Gaussian initialization with mean 0 and standard deviation 1 of the size of the content image. (Far right) Trained output using initialization of the output image as a random uniform initialization between -1 and 1.](images/nst_initializations.jpg)
-*Figure 1: (Far left) Trained output using initialization of the output image as the content image. (Middle left) Trained output using initialization of the output image as a resized version of the style image. (Middle right) Trained output using initialization of the output image as a Gaussian initialization with mean 0 and standard deviation 1 of the size of the content image. (Far right) Trained output using initialization of the output image as a random uniform initialization between -1 and 1.*
+*Figure 1: Stylized output images when trained with different initializations.*
 
-Of these 4 initializations, the content initialization resulted in the only stylized output that was desirable.
+Of these 4 initializations, the content initialization resulted in the only stylized output that satisfied our evaluation heuristics.
 
 ### Testing different weights for the loss functions
 In the following experiments, we kept *content weight* (alpha) fixed at 10,000 and varied *style weight* (beta). For the runs 
 **initialized with a resized style image**, 4 *style weights* were tested from 1,000 to 1.
 ![Figure 2: Stylized images when initialized with the resized style image and trained with differing ratios of content loss and style loss.](images/nst_styl_weight_prog.jpg)
-*Figure 2: Stylized images when initialized with the resized style image and trained with differing ratios of content loss and style loss.*
+*Figure 2: Stylized output images when initialized with the resized style image and trained with differing ratios of content loss and style loss.*
 
 With the stylized images **initialized with style**, an alpha-beta ratio of 10,000 to 10 appeared the best. The structure of the content image is clear and there are traces of the style image, however, the appearance of the style features are clustered and separate from the content features. Overall, even after manipulating the relative weights of the content and style losses, all stylized images initialized with style failed to converge to a good image.
 
 For the runs **initialized with a random noise** image, 4 *style weights* were tested from 10,000 to 10.
 ![Figure 3: Stylized images when initialized with Gaussian random noise and trained with differing ratios of content loss and style loss.](images/nst_gauss_weight_prog.jpg)
-*Figure 3: Stylized images when initialized with Gaussian random noise and trained with differing ratios of content loss and style loss.*
+*Figure 3: Stylized output images when initialized with Gaussian random noise and trained with differing ratios of content loss and style loss.*
 
 With the stylized images **initialized with random noise**, an alpha-beta ratio of 10,000 to 10 appeared the. The structural content is present, although the outlines of the figures are not well-defined, and there is a clear and constant blend of the style features. The quality of this final image is comparable to the quality of the content initialized image.
 
@@ -119,7 +130,7 @@ We tested implementing the style transfer algorithm with PyTorch’s pretrained 
 For each of these models, we needed to tune from which layers to extract the content feature targets and style feature targets.
 
 ![Figure 6: Stylized images where the content and style feature targets were obtained from various models. (Left) Features extracted from VGG19 (the paper’s original model). (Middle) Features extracted from ResNet50. (Right) Features extracted from Inception V3.](images/nst_cnn_prog.jpg)
-*Figure XX: Stylized images where the content and style feature targets were obtained from various models. (Left) Features extracted from VGG19 (the paper’s original model). (Middle) Features extracted from ResNet50. (Right) Features extracted from Inception V3.*
+*Figure 6: Stylized images where the content and style feature targets were obtained from various models. (Left) Features extracted from VGG19 (the paper’s original model). (Middle) Features extracted from ResNet50. (Right) Features extracted from Inception V3.*
 
 - Both ResNet50 and InceptionV3 generated stylized output images, however, based on our evaluation heuristics, they were not as good as with VGG19. 
 - Like with VGG19, the stylized output images of ResNet50 and InceptionV3 both clearly show the content image objects and they also adopt the style image color palette, however, they fail to meet the third heuristic which was adoption of the style image texture palette. 
