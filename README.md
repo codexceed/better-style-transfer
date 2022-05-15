@@ -44,6 +44,8 @@ Specify the *content* and *style* images from the respective directories in the 
 <img src="data/style-images/mosaic.jpg" width="270px" title="Style Image">
 </p>
 
+<div align="center">Content image (left) and Style Image (right)</div>
+
 ```shell
 python neural_style_transfer.py --content_img_name now_youre_in_new_york.jpg --style_img_name mosaic.jpg
 ```
