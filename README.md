@@ -19,8 +19,7 @@ python neural_style_transfer.py --content_img_name figures.jpg \
 ```
 python neural_style_transfer.py --content_img_name figures.jpg \
               --style_img_name candy.jpg \
-            --init_method content \
-            --model inceptionV3 \
-            --content_layer 4 \
-            --style_layers 6
+              --model inceptionV3 \
+              --content_layer 4 \
+              --style_layers 6
 ```
