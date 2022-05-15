@@ -33,7 +33,7 @@ to inform the style transfer process. Broadly, tt involves the following key ste
 
 1. Open Anaconda Prompt and navigate into project directory `cd path_to_repo`
 2. Run `conda env create` (while in project directory)
-3. Run `activate pytorch-nst
+3. Run `activate pytorch-nst`
 
 ### Basic
 Specify the *content* and *style* images from the respective directories in the `data` directory.
@@ -43,7 +43,7 @@ Specify the *content* and *style* images from the respective directories in the 
 </p>
 
 ```shell
-python neural_style_transfer.py --content_img_name <content-img-name> --style_img_name <style-img-name>
+python neural_style_transfer.py --content_img_name now_youre_in_new_york.jpg --style_img_name mosaic.jpg
 ```
 ![Default Output](data/examples/new_york/now_youre_in_new_york_mosaic_o_lbfgs_i_content_h_400_m_vgg19_cw_100000.0_sw_30000.0_tv_1.0_cl_-1_sl_-1.jpg)
 
@@ -85,18 +85,18 @@ In the following experiments, we kept *content weight* (alpha) fixed at 10,000 a
 ![Figure 2: Stylized images when initialized with the resized style image and trained with differing ratios of content loss and style loss.](images/nst_styl_weight_prog.jpg)
 *Figure 2: Stylized images when initialized with the resized style image and trained with differing ratios of content loss and style loss.*
 
-With the stylized images **initialized with style**, a alpha-beta ratio of 10,000 to 10 appeared the best. The structure of the content image is clear and there are traces of the style image, however, the appearance of the style features are clustered and separate from the content features. Overall, even after manipulating the relative weights of the content and style losses, all stylized images initialized with style failed to converge to a good image.
+With the stylized images **initialized with style**, an alpha-beta ratio of 10,000 to 10 appeared the best. The structure of the content image is clear and there are traces of the style image, however, the appearance of the style features are clustered and separate from the content features. Overall, even after manipulating the relative weights of the content and style losses, all stylized images initialized with style failed to converge to a good image.
 
 For the runs **initialized with a random noise** image, 4 *style weights* were tested from 10,000 to 10.
 ![Figure 3: Stylized images when initialized with Gaussian random noise and trained with differing ratios of content loss and style loss.](images/nst_gauss_weight_prog.jpg)
 *Figure 3: Stylized images when initialized with Gaussian random noise and trained with differing ratios of content loss and style loss.*
 
-With the stylized images **initialized with random noise**, a alpha-beta ratio of 10,000 to 10 appeared the. The structural content is present, although the outlines of the figures are not well-defined, and there is a clear and constant blend of the style features. The quality of this final image is comparable to the quality of the content initialized image.
+With the stylized images **initialized with random noise**, an alpha-beta ratio of 10,000 to 10 appeared the. The structural content is present, although the outlines of the figures are not well-defined, and there is a clear and constant blend of the style features. The quality of this final image is comparable to the quality of the content initialized image.
 
 ### Testing different layers from which to get feature representations
 - Each layer in a CNN contains different representations of the original image. 
 - Generally, the features each node corresponds to become more granular and abstract as the layers go deeper into the network. 
-- We hypothesized that from which layers the feature representations were taken, for both the content features and the 
+- We hypothesized that the layers from which the feature representations were taken, for both the content features and the 
 style features, would influence the quality of the output image. 
 - We tested getting the content features from the 1st, 3rd, 4th (default), and 5th convolutional layers.
 ![Figure 4: Changing the conv layer we got the content features from. We tested layers 1, 3, 4 (default), and 5.](images/nst_content_layers_prog.jpg)
@@ -106,9 +106,9 @@ style features, would influence the quality of the output image.
   convolutional layers would bias the stylized output image towards the original content image, whereas in our 
   investigations it made no difference.
 
-  - We also tested getting the style features from all convolutional layers up to the 1st, 2nd, 3rd, 4th, 5th, and 6th (default) layer.
-  ![Figure 5: Changing the max conv layer we got the style features from. We tested up to layers 1, 2, 3, 4, 5, 6](images/nst_style_layer_prog.jpg)
-  *Figure 5: Changing the max conv layer we got the style features from. We tested up to layers 1, 2, 3, 4, 5, 6*
+- We also tested getting the style features from all convolutional layers up to the 1st, 2nd, 3rd, 4th, 5th, and 6th (default) layer.
+![Figure 5: Changing the max conv layer we got the style features from. We tested up to layers 1, 2, 3, 4, 5, 6](images/nst_style_layer_prog.jpg)
+*Figure 5: Changing the max conv layer we got the style features from. We tested up to layers 1, 2, 3, 4, 5, 6*
   - Varying the layers from which we extracted the style features made a significant impact on the stylized output image. 
   - When taking features from layers 1 and 2 only, the model failed to learn and remained stuck on the original content image initialization. 
   - When taking features from layer 1 only or layers 1, 2, 3 only, the final output resulted in weak transfer of style where some of the color palette transferred but little of the style image texture transferred. 
