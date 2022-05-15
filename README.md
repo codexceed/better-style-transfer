@@ -38,7 +38,8 @@ to inform the style transfer process. Broadly, tt involves the following key ste
 ### Basic
 Specify the *content* and *style* images from the respective directories in the `data` directory.
 <p align="center">
-<img src="data/content-images/now_youre_in_new_york.jpg" width="270px">
+<img src="data/content-images/now_youre_in_new_york.jpg" width="270px" title="Content Image">
+<img src="data/style-images/mosaic.jpg" width="270px" title="Style Image">
 </p>
 python neural_style_transfer.py --content_img_name <content-img-name> --style_img_name <style-img-name>
 ```
