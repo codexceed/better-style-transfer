@@ -65,7 +65,7 @@ def generate_out_img_name(config):
     if 'reconstruct_script' in config:
         suffix = f'_o_{config["optimizer"]}_h_{str(config["height"])}_m_{config["model"]}{config["img_format"][1]}'
     else:
-        suffix = f'_o_{config["optimizer"]}_i_{config["init_method"]}_h_{str(config["height"])}_m_{config["model"]}_cw_{config["content_weight"]}_sw_{config["style_weight"]}_tv_{config["tv_weight"]}_sl_{config["layers"]}{config["img_format"][1]}'
+        suffix = f'_o_{config["optimizer"]}_i_{config["init_method"]}_h_{str(config["height"])}_m_{config["model"]}_cw_{config["content_weight"]}_sw_{config["style_weight"]}_tv_{config["tv_weight"]}_cl_{config["content_layer"]}_sl_{config["style_layers"]}{config["img_format"][1]}'
     return prefix + suffix
 
 
@@ -102,7 +102,7 @@ def get_uint8_range(x):
 
 
 # initially it takes some time for PyTorch to download the models into local cache
-def prepare_model(model, style_layers, device):
+def prepare_model(model, content_layer, style_layers, device):
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
     experimental = False
     if model == 'vgg16':
@@ -112,11 +112,11 @@ def prepare_model(model, style_layers, device):
         else:
             model = Vgg16(requires_grad=False, show_progress=True)
     elif model == 'vgg19':
-        model = Vgg19(style_layers, requires_grad=False, show_progress=True)
+        model = Vgg19(content_layer, style_layers, requires_grad=False, show_progress=True)
     elif model == 'resnet50':
-        model = Resnet50(style_layers, requires_grad=False, show_progress=True)
+        model = Resnet50(content_layer, style_layers, requires_grad=False, show_progress=True)
     elif model == 'inceptionV3':
-        model = InceptionV3(style_layers, requires_grad=False, show_progress=True)
+        model = InceptionV3(content_layer, style_layers, requires_grad=False, show_progress=True)
     else:
         raise ValueError(f'{model} not supported.')
 

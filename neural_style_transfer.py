@@ -54,7 +54,8 @@ def neural_style_transfer(config):
     print(f"Style Weight: {config['style_weight']}")
     print(f"TV Weight: {config['tv_weight']}")
     print(f"Init Method: {config['init_method']}")
-    print(f"Max Style Layer: {config['layers']}")
+    print(f"Content Layer: {config['content_layer']}")
+    print(f"Max Style Layer: {config['style_layers']}")
 
     content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
     style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
@@ -87,7 +88,7 @@ def neural_style_transfer(config):
     # we are tuning optimizing_img's pixels! (that's why requires_grad=True)
     optimizing_img = Variable(init_img, requires_grad=True)
 
-    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['model'], config['layers'], device)
+    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['model'], config['content_layer'], config['style_layers'], device)
     print(f'Using {config["model"]} in the optimization procedure.')
 
     content_img_set_of_feature_maps = neural_net(content_img)
@@ -168,6 +169,7 @@ if __name__ == "__main__":
     parser.add_argument("--init_method", type=str, choices=['uniform', 'gaussian', 'content', 'style'], default='content')
     parser.add_argument("--saving_freq", type=int, help="saving frequency for intermediate images (-1 means only final)", default=-1)
     
+    parser.add_argument("--content_layer", type=int, help="layer to use for target of content reconstruction", default=-1)
     parser.add_argument("--style_layers", type=int, help="max layer to use for target of style reconstruction (-1 means max)", default=-1)
 
     args = parser.parse_args()

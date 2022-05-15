@@ -164,7 +164,7 @@ class Vgg19(torch.nn.Module):
     'conv1_1', 'conv2_1', 'conv3_1', 'conv4_1', 'conv5_1' were used for style representation
     'conv4_2' was used for content representation (although they did some experiments with conv2_2 and conv5_2)
     """
-    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False, use_relu=True):
+    def __init__(self, content_layer=-1, style_layers=-1, requires_grad=False, show_progress=False, use_relu=True):
         super().__init__()
         vgg_pretrained_features = models.vgg19(pretrained=True, progress=show_progress).features
         if use_relu:  # use relu or as in original paper conv layers
@@ -175,14 +175,15 @@ class Vgg19(torch.nn.Module):
             self.offset = 0
 
         # Set content feature map and style feature maps
-        content_feature_map_index = 4 # conv4_2
-        self.content_feature_maps_index = content_feature_map_index
+        if content_layer == -1:
+            content_layer = 4
         if style_layers == -1:
-            self.style_feature_maps_indices = list(range(len(self.layer_names)))
-            self.style_feature_maps_indices.remove(content_feature_map_index)  # conv4_2
-        else:
-            self.style_feature_maps_indices = list(range(style_layers))
-            self.style_feature_maps_indices.remove(content_feature_map_index)  # conv4_2
+            style_layers = len(self.layer_names)
+
+        self.content_feature_maps_index = content_layer
+        self.style_feature_maps_indices = list(range(style_layers))
+        if style_layers > content_layer:
+            self.style_feature_maps_indices.remove(content_layer) 
 
 
         self.slice1 = torch.nn.Sequential()
@@ -229,19 +230,21 @@ class Resnet50(torch.nn.Module):
     """
     Implement resnet50 for style transfer
     """
-    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False):
+    def __init__(self, content_layer=-1, style_layers=-1, requires_grad=False, show_progress=False):
         super().__init__()
         self.resnet_pretrained = models.resnet50(pretrained=True, progress=show_progress)
         self.layer_names = ['layer0', 'layer1', 'layer2', 'layer3', 'layer4']
 
-        content_feature_map_index = 3
-        self.content_feature_maps_index = content_feature_map_index
+        # Set content feature map and style feature maps
+        if content_layer == -1:
+            content_layer = 3
         if style_layers == -1:
-            self.style_feature_maps_indices = list(range(len(self.layer_names)))
-            self.style_feature_maps_indices.remove(content_feature_map_index)
-        else:
-            self.style_feature_maps_indices = list(range(style_layers))
-            self.style_feature_maps_indices.remove(content_feature_map_index)
+            style_layers = len(self.layer_names)
+
+        self.content_feature_maps_index = content_layer
+        self.style_feature_maps_indices = list(range(style_layers))
+        if style_layers > content_layer:
+            self.style_feature_maps_indices.remove(content_layer)  
 
         if not requires_grad:
             for param in self.parameters():
@@ -276,19 +279,21 @@ class InceptionV3(torch.nn.Module):
     """
     Implement inceptionV3 for style transfer
     """
-    def __init__(self, style_layers=-1, requires_grad=False, show_progress=False):
+    def __init__(self, content_layer=-1, style_layers=-1, requires_grad=False, show_progress=False):
         super().__init__()
         self.inception_pretrained = models.inception_v3(pretrained=True, progress=show_progress)
         self.layer_names = ['layer1', 'layer2', 'layer3', 'layer4', 'layer5', 'layer6', 'layer7']
 
-        content_feature_map_index = 5
-        self.content_feature_maps_index = content_feature_map_index
+        # Set content feature map and style feature maps
+        if content_layer == -1:
+            content_layer = 5
         if style_layers == -1:
-            self.style_feature_maps_indices = list(range(len(self.layer_names)))
-            self.style_feature_maps_indices.remove(content_feature_map_index)
-        else:
-            self.style_feature_maps_indices = list(range(style_layers))
-            self.style_feature_maps_indices.remove(content_feature_map_index)
+            style_layers = len(self.layer_names)
+
+        self.content_feature_maps_index = content_layer
+        self.style_feature_maps_indices = list(range(style_layers))
+        if style_layers > content_layer:
+            self.style_feature_maps_indices.remove(content_layer) 
 
         if not requires_grad:
             for param in self.parameters():
