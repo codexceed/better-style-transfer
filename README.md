@@ -20,7 +20,7 @@ The NST algorithm leverages image representations derived from deep layers of a 
 to inform the style transfer process. Broadly, NST involves the following key steps:
 - Extract image representations from deep convolutional layers of an image recognition CNN from both the *content* 
 image and the *style* image.
-- Initialize a new content image as the output
+- Initialize a new content image where the pixels are trainable parameters as the output
 - Converge the content image towards the *stylized* image using losses derived cumulatively from both the style and content representations
 
 ## Algorithm
