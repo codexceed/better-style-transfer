@@ -41,13 +41,24 @@ Specify the *content* and *style* images from the respective directories in the 
 <img src="data/content-images/now_youre_in_new_york.jpg" width="270px" title="Content Image">
 <img src="data/style-images/mosaic.jpg" width="270px" title="Style Image">
 </p>
+
+```shell
 python neural_style_transfer.py --content_img_name <content-img-name> --style_img_name <style-img-name>
 ```
-![Default Output](data/output-images/combined_now_youre_in_new_york_mosaic/now_youre_in_new_york_mosaic_o_lbfgs_i_content_h_400_m_vgg19_cw_100000.0_sw_30000.0_tv_1.0_cl_-1_sl_-1.jpg)
+![Default Output](data/examples/new_york/now_youre_in_new_york_mosaic_o_lbfgs_i_content_h_400_m_vgg19_cw_100000.0_sw_30000.0_tv_1.0_cl_-1_sl_-1.jpg)
 
 ### Advanced
-- **Specify which model to use and weights for style and content images**
+- **Specify the model and weights**
 ```shell
-
+python neural_style_transfer.py --content_img_name now_youre_in_new_york.jpg --style_img_name mosaic.jpg --model vgg16 --content_weight 1000000 --style_weight 20000
 ```
-![VGG16 Output](data/output-images/combined_now_youre_in_new_york_mosaic/now_youre_in_new_york_mosaic_o_lbfgs_i_content_h_400_m_vgg16_cw_100000.0_sw_30000.0_tv_1.0_cl_-1_sl_-1.jpg)
+![VGG16 Output](data/examples/new_york/now_youre_in_new_york_mosaic_o_lbfgs_i_content_h_400_m_vgg16_cw_1000000.0_sw_20000.0_tv_1.0_cl_-1_sl_-1.jpg)
+
+- **Specify the layer configurations**
+```shell
+python neural_style_transfer.py --content_img_name figures.jpg \
+              --style_img_name candy.jpg \
+              --model inceptionV3 \
+              --content_layer 4 \
+              --style_layers 6
+```
