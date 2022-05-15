@@ -65,6 +65,31 @@ python neural_style_transfer.py --content_img_name figures.jpg \
               --style_layers 6
 ```
 
+## Repository Structure
+### Scripts
+- The main execution of style transfer is done by the `neural_style_transfer.py` script.
+- The `reconstruct_image_from_representation.py` script is used to visualize image representations across the layers.
+### Models
+We adapted standard `PyTorch` CNNs with a wrapper to expose the target layers for loss computation. We have defined the following models in `models.definitions.nets`.
+- Vgg16
+- Vgg16Experimental
+- Vgg19
+- Resnet50
+- InceptionV3
+
+### Utils
+The scripts rely on multiple utility functions for performing common tasks such as I/O, calculations, transformations, 
+visualizations, etc. These can be accessed via the `utils` module with the following submodules.
+- `utils.utils`
+- `utils.video_utils`
+
+### Data
+The repository contains some image samples to aid with the experimentation. The can be found in the `data` directory with following subdirectories:
+- `content-images`: Content image samples must be placed here for style transfer.
+- `style-images`: Style image samples must be placed here for style transfer.
+- `examples`: Some output examples
+- `output-images`: The transfer output images are written to this directory.
+
 ## Experiments
 
 In order to evaluate our experiments, we needed a method through which we could measure the quality of the stylized output image generated. We initially considered using the overall loss as such a criteria, however, we found that sometimes worse stylized output images had lower loss than better stylized output images. This follows the idea that the objective of texture transfer is subjective and there is no one optimal target to converge to.
@@ -73,6 +98,13 @@ Instead of loss, we adopted the following heuristics to evaluate a good stylized
 1. The output image contains clearly outlines of the objects in the content image
 2. The output image adopts the color palette of the style image
 3. The output image adopts the texture of the style image
+
+<p align="center">
+<img src="data/content-images/figures.jpg" width="270px" title="Content Image">
+<img src="data/style-images/candy.jpg" width="270px" title="Style Image">
+</p>
+
+<div align="center">Content image (left) and Style Image (right)</div>
 
 ### Testing different image initializations
 The choice of initialization influenced the final output significantly. Our expectation was that all of these choices 
