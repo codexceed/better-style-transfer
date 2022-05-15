@@ -7,6 +7,7 @@ from torch.autograd import Variable
 import numpy as np
 import os
 import argparse
+import time
 
 
 def build_loss(neural_net, optimizing_img, target_representations, content_feature_maps_index, style_feature_maps_indices, config):
@@ -47,6 +48,15 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
 
 
 def neural_style_transfer(config):
+    print(f"Content Image: {config['content_img_name']}")
+    print(f"Style Image: {config['style_img_name']}")
+    print(f"Content Weight: {config['content_weight']}")
+    print(f"Style Weight: {config['style_weight']}")
+    print(f"TV Weight: {config['tv_weight']}")
+    print(f"Init Method: {config['init_method']}")
+    print(f"Content Layer: {config['content_layer']}")
+    print(f"Max Style Layer: {config['style_layers']}")
+
     content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
     style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
 
@@ -59,22 +69,26 @@ def neural_style_transfer(config):
     content_img = utils.prepare_img(content_img_path, config['height'], device)
     style_img = utils.prepare_img(style_img_path, config['height'], device)
 
-    if config['init_method'] == 'random':
-        # white_noise_img = np.random.uniform(-90., 90., content_img.shape).astype(np.float32)
+    # init image has same dimension as content image - this is a hard constraint
+    if config['init_method'] == 'uniform':
+        uniform_noise_img = np.random.uniform(-90., 90., content_img.shape).astype(np.float32)
+        init_img = torch.from_numpy(uniform_noise_img).float().to(device)
+    elif config['init_method'] == 'gaussian':
         gaussian_noise_img = np.random.normal(loc=0, scale=90., size=content_img.shape).astype(np.float32)
         init_img = torch.from_numpy(gaussian_noise_img).float().to(device)
     elif config['init_method'] == 'content':
         init_img = content_img
-    else:
-        # init image has same dimension as content image - this is a hard constraint
+    elif config['init_method'] == 'style':
         # feature maps need to be of same size for content image and init image
         style_img_resized = utils.prepare_img(style_img_path, np.asarray(content_img.shape[2:]), device)
         init_img = style_img_resized
+    else:
+        print('Error: Incorrect usage of init_method argument.')
 
     # we are tuning optimizing_img's pixels! (that's why requires_grad=True)
     optimizing_img = Variable(init_img, requires_grad=True)
 
-    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['model'], device)
+    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['model'], config['content_layer'], config['style_layers'], device)
     print(f'Using {config["model"]} in the optimization procedure.')
 
     content_img_set_of_feature_maps = neural_net(content_img)
@@ -121,6 +135,7 @@ def neural_style_transfer(config):
             return total_loss
 
         optimizer.step(closure)
+        utils.save_and_maybe_display(optimizing_img, dump_path, config, cnt, num_of_iterations[config['optimizer']], should_display=False)
 
     return dump_path
 
@@ -149,9 +164,13 @@ if __name__ == "__main__":
     parser.add_argument("--tv_weight", type=float, help="weight factor for total variation loss", default=1e0)
 
     parser.add_argument("--optimizer", type=str, choices=['lbfgs', 'adam'], default='lbfgs')
-    parser.add_argument("--model", type=str, choices=['vgg16', 'vgg19'], default='vgg19')
-    parser.add_argument("--init_method", type=str, choices=['random', 'content', 'style'], default='content')
+    parser.add_argument("--model", type=str, choices=['vgg16', 'vgg19', 'resnet50', 'inceptionV3'], default='vgg19')
+    parser.add_argument("--init_method", type=str, choices=['uniform', 'gaussian', 'content', 'style'], default='content')
     parser.add_argument("--saving_freq", type=int, help="saving frequency for intermediate images (-1 means only final)", default=-1)
+    
+    parser.add_argument("--content_layer", type=int, help="layer to use for target of content reconstruction", default=-1)
+    parser.add_argument("--style_layers", type=int, help="max layer to use for target of style reconstruction (-1 means max)", default=-1)
+
     args = parser.parse_args()
 
     # some values of weights that worked for figures.jpg, vg_starry_night.jpg (starting point for finding good images)
@@ -174,26 +193,11 @@ if __name__ == "__main__":
     optimization_config['output_img_dir'] = output_img_dir
     optimization_config['img_format'] = img_format
 
-    # with torch.profiler.profile(
-    #         schedule=torch.profiler.schedule(
-    #             wait=0,
-    #             warmup=0,
-    #             active=1,
-    #             repeat=1),
-    #         on_trace_ready=torch.profiler.tensorboard_trace_handler('./data/stats'),
-    #         with_stack=True
-    # ) as profiler:
-    #     results_path = neural_style_transfer(optimization_config)
-    #     profiler.step()
-
-    import cProfile, pstats
-    profiler = cProfile.Profile()
     # original NST (Neural Style Transfer) algorithm (Gatys et al.)
-    profiler.enable()
+    startTime = time.time()
     results_path = neural_style_transfer(optimization_config)
-    profiler.disable()
+    endTime = time.time()
+    print(f'Time: {endTime - startTime}')
 
-    stats = pstats.Stats(profiler).sort_stats("cumtime")
-    stats.print_stats()
     # uncomment this if you want to create a video from images dumped during the optimization procedure
     # create_video_from_intermediate_results(results_path, img_format)
