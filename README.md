@@ -1,7 +1,7 @@
 # Better Neural Style Transfer
 ## Introduction
 This project aims to replicate the work of [Gatys et al.](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf) 
-on using neural nets to perform **texture style transfer** from one image to another while discovering insights into the performance of the transfer process across various CNNs.
+on using neural nets to perform **texture style transfer** from one image to another while discovering insights into the performance enhancement via analysis of the transfer process across various training configurations.
 ### Image Style Transfer Background
 Image style transfer is the process of superimposing the artistic style of a *source image* 
 onto another *target image* to generate a new *stylized image*, thereby **transferring the style** of the *source 
