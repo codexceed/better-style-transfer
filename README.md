@@ -175,7 +175,7 @@ perfectly set the content and style weight losses.
 
 ## Acknowledgements
 ### Useful Repositories
-- [pytorch-neural-style-transfer](pytorch-neural-style-transfer)
+- [pytorch-neural-style-transfer](https://github.com/gordicaleksa/pytorch-neural-style-transfer)
 - [fast_neural_style](https://github.com/pytorch/examples/tree/master/fast_neural_style) (PyTorch, feed-forward method)
 
 ### References
