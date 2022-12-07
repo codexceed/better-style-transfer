@@ -22,6 +22,7 @@ def _get_device():
 
 def get_stylized_image(content_image: str, style_image: str) -> Path:
     """Train the neural net on MNIST."""
+    data_path = Path(__file__).parent.parent.parent / "data"
     optimization_config = {
         "content_img_name": content_image,
         "style_img_name": style_image,
@@ -35,9 +36,9 @@ def get_stylized_image(content_image: str, style_image: str) -> Path:
         "saving_freq": -1,
         "content_layer": -1,
         "style_layers": -1,
-        "content_images_dir": "/Users/sarthak/Repos/better-style-transfer/data/content-images",
-        "style_images_dir": "/Users/sarthak/Repos/better-style-transfer/data/style-images",
-        "output_img_dir": "/Users/sarthak/Repos/better-style-transfer/data/output-images",
+        "content_images_dir": str(data_path / "content-images"),
+        "style_images_dir": str(data_path / "style-images"),
+        "output_img_dir": str(data_path / "output-images"),
         "img_format": (4, ".jpg"),
     }
 
