@@ -1,12 +1,13 @@
 import os
+import time
 from pathlib import Path
 
 import torch
-import time
 
 from nst_app.ml_engine.nst import neural_style_transfer
 
 MODEL_FILE = "mnist_cnn.pt"
+DATA_DIR = Path(__file__).parent.parent.parent / "data"
 
 
 def _get_device():
@@ -20,15 +21,26 @@ def _get_device():
     return device
 
 
-def get_stylized_image(content_image: str, style_image: str) -> Path:
-    """Train the neural net on MNIST."""
-    data_path = Path(__file__).parent.parent.parent / "data"
+def get_stylized_image(
+    content_image: str, style_image: str, content_weight: float, style_weight: float
+) -> Path:
+    """
+    Train the neural net on MNIST.
+    Args:
+        content_image: Path to content image
+        style_image: Path to style image
+        content_weight: Weight (priority) for content
+        style_weight: Weight (priority) for style
+
+    Returns:
+        Path to stylized image
+    """
     optimization_config = {
         "content_img_name": content_image,
         "style_img_name": style_image,
         "height": 400,
-        "content_weight": 100000.0,
-        "style_weight": 30000.0,
+        "content_weight": content_weight,
+        "style_weight": style_weight,
         "tv_weight": 1.0,
         "optimizer": "lbfgs",
         "model": "vgg19",
@@ -36,9 +48,9 @@ def get_stylized_image(content_image: str, style_image: str) -> Path:
         "saving_freq": -1,
         "content_layer": -1,
         "style_layers": -1,
-        "content_images_dir": str(data_path / "content-images"),
-        "style_images_dir": str(data_path / "style-images"),
-        "output_img_dir": str(data_path / "output-images"),
+        "content_images_dir": str(DATA_DIR / "content-images"),
+        "style_images_dir": str(DATA_DIR / "style-images"),
+        "output_img_dir": str(DATA_DIR / "output-images"),
         "img_format": (4, ".jpg"),
     }
 

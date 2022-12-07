@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
 
-import torch
-import utils.utils as utils
 import numpy as np
+import torch
 from torch.autograd import Variable
-from torch.optim import Adam, LBFGS
+from torch.optim import LBFGS, Adam
+
+import utils.utils as utils
 
 
 def build_loss(
@@ -104,6 +105,14 @@ def neural_style_transfer(config):
     dump_path = os.path.join(config["output_img_dir"], out_dir_name)
     os.makedirs(dump_path, exist_ok=True)
 
+    if torch.cuda.is_available():
+        device = torch.device("cuda")
+    elif torch.backends.mps.is_available() and torch.backends.mps.is_built():
+        device = torch.device("mps")
+    else:
+        device = torch.device("cpu")
+
+    print(f"Using device: {device}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     content_img = utils.prepare_img(content_img_path, config["height"], device)

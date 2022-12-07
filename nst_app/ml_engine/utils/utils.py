@@ -1,19 +1,18 @@
+import os
+
 import cv2 as cv
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torchvision import transforms
-import os
-import matplotlib.pyplot as plt
-
 
 from models.definitions.nets import (
-    Vgg16,
-    Vgg19,
-    Vgg16Experimental,
-    Resnet50,
     InceptionV3,
+    Resnet50,
+    Vgg16,
+    Vgg16Experimental,
+    Vgg19,
 )
-
 
 IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
 IMAGENET_STD_NEUTRAL = [1, 1, 1]
