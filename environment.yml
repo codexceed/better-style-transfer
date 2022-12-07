@@ -12,3 +12,4 @@ dependencies:
   - pip:
     - numpy==1.18.1
     - opencv-python==4.2.0.32
+    - flask~=2.2.2
