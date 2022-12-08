@@ -22,7 +22,11 @@ def _get_device():
 
 
 def get_stylized_image(
-    content_image: str, style_image: str, content_weight: float, style_weight: float
+    content_image: str,
+    style_image: str,
+    content_weight: float,
+    style_weight: float,
+    img_id: str,
 ) -> Path:
     """
     Train the neural net on MNIST.
@@ -31,6 +35,7 @@ def get_stylized_image(
         style_image: Path to style image
         content_weight: Weight (priority) for content
         style_weight: Weight (priority) for style
+        img_id: Unique identifier for the output
 
     Returns:
         Path to stylized image
@@ -50,7 +55,7 @@ def get_stylized_image(
         "style_layers": -1,
         "content_images_dir": str(DATA_DIR / "content-images"),
         "style_images_dir": str(DATA_DIR / "style-images"),
-        "output_img_dir": str(DATA_DIR / "output-images"),
+        "output_img_dir": str(DATA_DIR / img_id),
         "img_format": (4, ".jpg"),
     }
 
