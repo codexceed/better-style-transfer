@@ -64,7 +64,7 @@ def stylize() -> Any:
     except FileNotFoundError:
         img_map = {}
 
-    img_map[img_id] = str(DATA_DIR / out_dir_name / img_id)
+    img_map[img_id] = str(DATA_DIR / img_id / out_dir_name)
 
     with open(IMG_MAP, "w") as f:
         json.dump(img_map, f)
