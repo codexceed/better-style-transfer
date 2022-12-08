@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from torchvision import transforms
 
-from models.definitions.nets import (
+from nst_app.ml_engine.models.definitions.nets import (
     InceptionV3,
     Resnet50,
     Vgg16,

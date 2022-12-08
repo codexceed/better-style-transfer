@@ -7,15 +7,15 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      scope: academics
+      scope: final
   template:
     metadata:
       labels:
-        scope: academics
+        scope: final
     spec:
       containers:
-      - name: mnist-app
-        image: codexceed/mnist_app:1.0.1
+      - name: nst-app
+        image: codexceed/nst-app:1.2.1
         imagePullPolicy: IfNotPresent
 ---
 apiVersion: v1
@@ -26,7 +26,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    scope: academics
+    scope: final
   ports:
   - port: 5000
     targetPort: 5000

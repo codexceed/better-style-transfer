@@ -6,7 +6,7 @@ import torch
 from torch.autograd import Variable
 from torch.optim import LBFGS, Adam
 
-import utils.utils as utils
+from nst_app.ml_engine.utils import utils
 
 
 def build_loss(
