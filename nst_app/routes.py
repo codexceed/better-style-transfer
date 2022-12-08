@@ -86,6 +86,13 @@ def get_style_image() -> Any:
     with open(IMG_MAP, "r") as f:
         img_dir = Path(json.load(f)[img_id])
 
-    img_file = next(img_dir.glob("*.jpg"))
+    try:
+        img_file = next(img_dir.glob("*.jpg"))
+    except StopIteration:
+        response = make_response(
+            "Style transfer job still running for this ID. Please try later.", 100
+        )
+        return response
+
     response = send_file(img_file, mimetype="image/gif")
     return response
